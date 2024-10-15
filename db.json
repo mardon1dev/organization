@@ -1,0 +1,22 @@
+{
+  "organization": [
+    {
+      "id": "2",
+      "name": "Najot Ta'lim",
+      "status": "1",
+      "regioniD": "1",
+      "regionPlace": "Tashkent shahri",
+      "createdTime": "10-10-2024",
+      "address": "Chilonzor 11kv",
+      "key": "12"
+    },
+    {
+      "id": "e65d",
+      "name": "TDIE",
+      "status": "1",
+      "regionPlace": "Jizzax viloyati",
+      "createdTime": "2024-10-15",
+      "address": "vevvevewa"
+    }
+  ]
+}
