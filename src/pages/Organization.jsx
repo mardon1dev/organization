@@ -10,9 +10,9 @@ const Organizations = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [refreshPage, setRefreshPage] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // State for search term
-  const [regionFilter, setRegionFilter] = useState(""); // State for region filter
-  const [filteredOrganizations, setFilteredOrganizations] = useState([]); // State for filtered organizations
+  const [searchTerm, setSearchTerm] = useState("");
+  const [regionFilter, setRegionFilter] = useState(""); 
+  const [filteredOrganizations, setFilteredOrganizations] = useState([]); 
   const [newOrganization, setNewOrganization] = useState({
     name: "",
     status: "1",
@@ -29,7 +29,7 @@ const Organizations = () => {
         const data = await response.json();
         setTimeout(() => {
           setOrganizations(data);
-          setFilteredOrganizations(data); // Set filtered organizations to the initial data
+          setFilteredOrganizations(data);
           setLoading(false);
         }, 500);
       } catch (error) {
@@ -40,9 +40,7 @@ const Organizations = () => {
   }, [refreshPage]);
 
   useEffect(() => {
-    // Filter organizations based on the search term and region
     let filtered = organizations;
-
     if (searchTerm) {
       filtered = filtered.filter((org) =>
         org.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -57,7 +55,6 @@ const Organizations = () => {
             filtered = filtered.filter((org) => org.regionPlace === regionFilter);
         }
     }
-
     setFilteredOrganizations(filtered);
   }, [searchTerm, regionFilter, organizations]);
 
@@ -203,8 +200,8 @@ const Organizations = () => {
                   }))
                 }
                 options={[
-                  { value: "1", label: "Active" },
-                  { value: "0", label: "Inactive" },
+                  { value: "1", label: "Faol" },
+                  { value: "0", label: "Faol emas" },
                 ]}
               />
             </div>
@@ -219,7 +216,7 @@ const Organizations = () => {
               />
             </div>
             <div className="mt-2">
-              <label>tashkilot manzili:</label>
+              <label>Tashkilot manzili:</label>
               <Input
                 className="mt-2"
                 allowClear

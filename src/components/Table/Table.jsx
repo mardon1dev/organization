@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Table, Tag, Pagination } from "antd";
+import { Button, Table, Tag, Pagination, Input, Select } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -8,12 +8,17 @@ import {
 import ModalWrapper from "../Modal/Modal";
 import { Link } from "react-router-dom";
 
-const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
+const TableDisplay = ({ data, refreshPage, setRefreshPage, regionOptions }) => {
   const [showModal, setShowModal] = useState(false);
   const [deleteRecord, setDeleteRecord] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+
+  const [editRecord, setEditRecord] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  console.log(data);
 
   const handlePageChange = (page, pageSize) => {
     setCurrentPage(page);
@@ -22,6 +27,7 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
 
   const handleCancel = () => {
     setShowModal(false);
+    setShowEditModal(false);
   };
 
   const columns = [
@@ -34,14 +40,13 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
       title: "Holati",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status === "1" ? "Active" : "Inactive"),
+      render: (status) => (status === "1" ? "Faol" : "Faol emas"),
     },
     {
       title: "Hudud joyi",
       dataIndex: "regionPlace",
       key: "regionPlace",
     },
-
     {
       title: "Manzil",
       dataIndex: "address",
@@ -57,10 +62,7 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
       key: "action",
       render: (_, record) => (
         <div className="flex items-center space-x-3">
-          <Link
-            className="hover:text-blue-500"
-            to={`/${record.id}`}
-          >
+          <Link className="hover:text-blue-500" to={`/${record.id}`}>
             <SolutionOutlined className="text-xl" />
           </Link>
           <button
@@ -69,7 +71,10 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
           >
             <DeleteOutlined className="text-xl" />
           </button>
-          <button className="hover:text-green-500">
+          <button
+            onClick={() => handleEditModal(record)}
+            className="hover:text-green-500"
+          >
             <EditOutlined className="text-xl" />
           </button>
         </div>
@@ -77,13 +82,18 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
     },
   ];
 
-  // Show delete modal
+  const handleRegionChange = (value, obj) => {
+    setEditRecord((prevState) => ({
+      ...prevState,
+      regionPlace: obj.label,
+    }));
+  };
+
   const handleShowModal = (record) => {
     setDeleteRecord(record);
     setShowModal(true);
   };
 
-  // Delete logic
   const handleDelete = () => {
     fetch(`http://localhost:3000/organization/${deleteRecord.id}`, {
       method: "DELETE",
@@ -96,6 +106,43 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
         setShowModal(false);
       })
       .catch((error) => console.error(error));
+  };
+
+  const handleEditModal = (record) => {
+    setEditRecord(record);
+    setShowEditModal(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditRecord((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    fetch(`http://localhost:3000/organization/${editRecord.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(editRecord),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to update the organization");
+        }
+        return response.json();
+      })
+      .then(() => {
+        setRefreshPage(!refreshPage);
+        setShowEditModal(false);
+      })
+      .catch((error) => {
+        console.error("Error updating the organization:", error);
+      });
   };
 
   const dataSlice = data.slice(
@@ -123,7 +170,7 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
         open={showModal}
         setOpen={setShowModal}
         handleCancel={handleCancel}
-        title="Delete Organization"
+        title="Tashkilotni o'chirish"
       >
         <div>
           <p>Ushbu tashkilotni o'chirib yuborishga tayyormisiz?</p>
@@ -140,9 +187,96 @@ const TableDisplay = ({ data, refreshPage, setRefreshPage }) => {
           </div>
         </div>
       </ModalWrapper>
+      <ModalWrapper
+        open={showEditModal}
+        setOpen={setShowEditModal}
+        title={"Tashkilotni tahrirlash"}
+        handleCancel={handleCancel}
+      >
+        <div>
+          <form onSubmit={handleSubmit} className="p-2" autoComplete="off">
+            <div className="mt-2">
+              <label>Tashkilot nomi:</label>
+              <Input
+                className="mt-2"
+                allowClear
+                type="text"
+                name="name"
+                value={editRecord?.name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mt-2">
+              <label>Tashkilot holati:</label>
+              <Select
+                className="mt-2 w-full"
+                value={editRecord?.status}
+                onChange={(value) =>
+                  setEditRecord((prevState) => ({
+                    ...prevState,
+                    status: value,
+                  }))
+                }
+                options={[
+                  { value: "1", label: "Faol" },
+                  { value: "0", label: "Faol emas" },
+                ]}
+              />
+            </div>
+            <div className="mt-2">
+              <label>Hudud joyi:</label>
+              <Select
+                className="mt-2 w-full"
+                placeholder="Select region"
+                value={editRecord?.regionPlace}
+                onChange={handleRegionChange}
+                options={regionOptions}
+              />
+            </div>
+            <div className="mt-2">
+              <label>Tashkilot manzili:</label>
+              <Input
+                className="mt-2"
+                allowClear
+                type="text"
+                name="address"
+                value={editRecord?.address}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mt-2">
+              <label>Yaratilgan vaqti:</label>
+              <Input
+                className="mt-2"
+                type="date"
+                name="createdTime"
+                value={editRecord?.createdTime}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="w-full flex items-center justify-end space-x-5 mt-5">
+              <button
+                type="button"
+                className="text-[16px]"
+                onClick={handleCancel}
+              >
+                Orqaga
+              </button>
+              <button
+                type="submit"
+                className="bg-[#000]/20 active:bg-[#000]/30 px-2 rounded text-[16px]"
+              >
+                Saqlash
+              </button>
+            </div>
+          </form>
+        </div>
+      </ModalWrapper>
     </>
   );
 };
 
 export default TableDisplay;
- 
